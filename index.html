@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Chapter Interactive Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        #quiz-container {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div id="quiz-container" class="w-full max-w-3xl bg-white dark:bg-gray-800 shadow-2xl rounded-xl p-6 md:p-8 transform transition-all duration-500">
+        
+        <!-- Chapter Selection Screen -->
+        <div id="chapter-selection-screen" class="text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-4">Strategic Management Quiz</h1>
+            <p class="text-gray-600 dark:text-gray-300 mb-8">Please select a chapter to begin the quiz.</p>
+            <div id="chapter-buttons-container" class="space-y-3">
+                <!-- Chapter buttons will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Quiz Screen (Initially hidden) -->
+        <div id="quiz-screen" class="hidden">
+            <button id="back-to-chapters-btn" class="mb-4 text-sm text-indigo-600 dark:text-indigo-400 hover:underline">&larr; Back to Chapters</button>
+            <div id="header-container" class="text-center mb-6 p-4 bg-indigo-50 dark:bg-gray-700 rounded-lg">
+                <h2 id="topic-title" class="text-xl font-bold text-indigo-700 dark:text-indigo-300">Topic</h2>
+            </div>
+            
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                     <p class="text-sm font-semibold text-indigo-500 dark:text-indigo-400">Question <span id="question-number"></span> of <span id="total-questions"></span></p>
+                     <p class="text-sm font-semibold text-gray-600 dark:text-gray-300">Score: <span id="score">0</span></p>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
+                    <div id="progress-bar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <h3 id="question-text" class="text-xl md:text-2xl font-semibold mb-6 min-h-[6rem]"></h3>
+            
+            <div id="options-container" class="space-y-3"></div>
+            
+            <div id="feedback-container" class="mt-6 p-4 rounded-lg hidden">
+                <p id="feedback-text" class="font-semibold"></p>
+                <p id="explanation-text" class="text-sm mt-2"></p>
+            </div>
+
+            <button id="next-btn" class="w-full mt-6 bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-6 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-400 dark:focus:ring-gray-700 hidden">
+                Next Question
+            </button>
+        </div>
+
+        <!-- Result Screen (Initially hidden) -->
+        <div id="result-screen" class="text-center hidden">
+            <h2 class="text-3xl md:text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-4">Quiz Complete!</h2>
+            <p class="text-lg text-gray-700 dark:text-gray-200 mb-2">Your Final Score:</p>
+            <p id="final-score" class="text-5xl font-extrabold text-gray-900 dark:text-white mb-6"></p>
+            <p id="result-message" class="text-gray-600 dark:text-gray-300 mb-8"></p>
+            <button id="restart-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-800">
+                Try Same Chapter Again
+            </button>
+            <button id="back-to-main-menu-btn" class="w-full mt-4 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition-transform transform hover:scale-105">
+                Choose Another Chapter
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const allQuizzes = {
+            "chapter1": {
+                title: "Chapter 1: The Essentials",
+                questions: [
+                    { topic: "Topic 1: Definition & Process", question: "Strategic management is defined as the art and science of formulating, implementing, and ____ cross-functional decisions.", options: ["analyzing", "evaluating", "financing", "marketing"], answer: "evaluating", explanation: "The three core stages of strategic management are formulation, implementation, and evaluation." },
+                    { topic: "Topic 1: Definition & Process", question: "Which stage of the strategic-management process involves developing a vision and mission?", options: ["Strategy Formulation", "Strategy Implementation", "Strategy Evaluation", "Situation Analysis"], answer: "Strategy Formulation", explanation: "Strategy formulation is the stage where a vision, mission, objectives, and strategies are developed." },
+                    { topic: "Topic 1: Definition & Process", question: "Mobilizing employees and managers to put formulated strategies into action is the focus of which stage?", options: ["Strategy Formulation", "Strategy Implementation", "Strategy Evaluation", "Internal Audit"], answer: "Strategy Implementation", explanation: "Strategy implementation is the action-oriented stage that requires personal discipline, commitment, and sacrifice." },
+                    { topic: "Topic 1: Definition & Process", question: "The final stage in strategic management, where managers determine if their strategies are working, is:", options: ["Strategy Formulation", "Strategy Implementation", "Strategy Evaluation", "The Decision Stage"], answer: "Strategy Evaluation", explanation: "Strategy evaluation is the primary means for obtaining information on whether chosen strategies are achieving objectives." },
+                    { topic: "Topic 2: Key Concepts", question: "Which term refers to what an organization does especially well compared to rival firms?", options: ["Competitive Advantage", "Long-term Objective", "Annual Objective", "Policy"], answer: "Competitive Advantage", explanation: "Sustaining a competitive advantage is the ultimate goal of strategic management." },
+                    { topic: "Topic 2: Key Concepts", question: "A company's 'vision statement' should answer which fundamental question?", options: ["'What is our business?'", "'Who are our customers?'", "'What do we want to become?'", "'What are our values?'"], answer: "'What do we want to become?'", explanation: "A vision statement is a long-term view of what the organization aspires to be." },
+                    { topic: "Topic 2: Key Concepts", question: "Specific, measurable, challenging, realistic, and timely goals are known as:", options: ["Policies", "Strategies", "Long-Term Objectives", "Mission Components"], answer: "Long-Term Objectives", explanation: "Well-defined objectives are crucial for tracking progress and ensuring alignment across the organization." },
+                    { topic: "Topic 3: Benefits & Importance", question: "The primary benefit of strategic management is that it allows an organization to be more ____ than ____.", options: ["reactive; proactive", "profitable; non-profitable", "proactive; reactive", "centralized; decentralized"], answer: "proactive; reactive", explanation: "Strategic management enables a firm to initiate and influence activities, rather than just responding to them." },
+                    { topic: "Topic 3: Benefits & Importance", question: "Which of the following is considered a nonfinancial benefit of strategic management?", options: ["Increased sales", "Improved profitability", "Enhanced awareness of external threats", "Higher stock price"], answer: "Enhanced awareness of external threats", explanation: "Nonfinancial benefits include better understanding of the environment, increased productivity, and reduced resistance to change." },
+                    { topic: "Topic 3: Benefits & Importance", question: "According to the chapter, what might be 'the most important word in management'?", options: ["Profit", "Strategy", "Advantage", "Communication"], answer: "Communication", explanation: "Communication is key to successful strategic management, fostering understanding and commitment among all employees." },
+                    { topic: "Topic 3: Benefits & Importance", question: "Which is a common reason why some firms do NO strategic planning?", options: ["They have too much money.", "They are too busy 'firefighting' daily crises.", "They have no competitors.", "The government forbids it."], answer: "They are too busy 'firefighting' daily crises.", explanation: "Being consumed by internal problems and daily operations is a major reason managers fail to plan strategically for the future." },
+                ]
+            },
+            "chapter2": {
+                title: "Chapter 2: The Context of Managing Strategically",
+                questions: [
+                    { topic: "Topic 1: Perspectives on Competitive Advantage", question: "What is the primary goal of 'managing strategically'?", options: ["To increase quarterly profits", "To develop and maintain competitive advantage", "To reduce employee turnover", "To satisfy all stakeholders equally"], answer: "To develop and maintain competitive advantage", explanation: "Managing strategically means formulating and implementing strategies that allow an organization to develop and maintain what sets it apart, i.e., its competitive advantage." },
+                    { topic: "Topic 1: Perspectives on Competitive Advantage", question: "The Industrial Organization (I/O) view suggests that competitive advantage primarily comes from:", options: ["A company's unique internal resources", "Properly analyzing and reacting to the external environment", "Rapid, radical surprises in the marketplace", "A strong organizational culture"], answer: "Properly analyzing and reacting to the external environment", explanation: "The I/O view, developed by Michael Porter, advocates that external industry factors are more important than internal factors in achieving competitive advantage." },
+                    { topic: "Topic 1: Perspectives on Competitive Advantage", question: "A major weakness of the Industrial Organization (I/O) view is that it:", options: ["Focuses too much on small businesses", "Is too complex for most managers to use", "Ignores the unique characteristics and resources of individual companies", "Only applies to technology companies"], answer: "Ignores the unique characteristics and resources of individual companies", explanation: "The I/O view's focus on industry structure can overlook the fact that different firms within the same industry can have vastly different resources and performance." },
+                    { topic: "Topic 1: Perspectives on Competitive Advantage", question: "The Resource-Based View (RBV) proposes that competitive advantage is derived from:", options: ["Choosing the most profitable industry", "A firm's unique collection of assets and capabilities", "The number of competitors in the market", "Globalization and technology"], answer: "A firm's unique collection of assets and capabilities", explanation: "The RBV emphasizes that internal resources are the key to competitive advantage, and organizations should exploit these unique resources." },
+                    { topic: "Topic 1: Perspectives on Competitive Advantage", question: "Which of the following would be considered a 'Human' resource under the RBV?", options: ["Brand reputation", "Cash reserves", "Manufacturing equipment", "Employee skills and experience"], answer: "Employee skills and experience", explanation: "Human resources under the RBV include the knowledge, skills, experience, and competencies of the organization's workforce." },
+                    { topic: "Topic 1: Perspectives on Competitive Advantage", question: "According to the RBV, for a resource to be a source of competitive advantage, it must be valuable, rare, hard to duplicate, and ____.", options: ["Easily sold", "Tangible", "Exploitable by the firm", "Common in the industry"], answer: "Exploitable by the firm", explanation: "A resource, no matter how valuable or rare, can only provide an advantage if the firm is organized and able to fully exploit it." },
+                    { topic: "Topic 1: Perspectives on Competitive Advantage", question: "Which perspective views competitive advantage as temporary and gained through 'rapid radical surprises'?", options: ["Industrial Organization (I/O) View", "Resource-Based View (RBV)", "Guerrilla View", "Stakeholder View"], answer: "Guerrilla View", explanation: "The Guerrilla View suggests that in today's dynamic environment, any advantage is temporary and must be constantly renewed through unexpected actions." },
+                    { topic: "Topic 1: Perspectives on Competitive Advantage", question: "A company that constantly disrupts the market with new, unforeseen product features is following which perspective?", options: ["I/O View", "RBV", "Guerrilla View", "Traditional View"], answer: "Guerrilla View", explanation: "This approach aligns with the Guerrilla View's emphasis on continual, revolutionary changes and hammering the competition with surprises." },
+                    { topic: "Topic 1: Perspectives on Competitive Advantage", question: "Analyzing the 'five forces' of an industry (e.g., threat of new entrants, buyer power) is a key activity in which view?", options: ["I/O View", "RBV", "Guerrilla View", "Cultural View"], answer: "I/O View", explanation: "Michael Porter's Five Forces model is the cornerstone of the Industrial Organization (I/O) view for analyzing the external industry environment." },
+                    { topic: "Topic 1: Perspectives on Competitive Advantage", question: "A patent on a revolutionary new drug is an example of what kind of resource under RBV?", options: ["Physical", "Human", "Financial", "Intangible"], answer: "Intangible", explanation: "Intangible resources include brand names, reputation, trademarks, and patents, which can be powerful sources of competitive advantage." },
+                    { topic: "Topic 2: The New Business Environment", question: "Which of the following is NOT listed as one of the three critical driving forces of the new business environment?", options: ["Information revolution", "Technology", "Government regulation", "Globalization"], answer: "Government regulation", explanation: "The three critical driving forces identified are the information revolution, technology, and globalization." },
+                    { topic: "Topic 2: The New Business Environment", question: "An 'implication' of the new driving forces is the 'reduced need for physical assets.' What does this mean?", options: ["Companies no longer need buildings or equipment.", "Information and knowledge have become more valuable than traditional physical assets.", "All companies are becoming service-based.", "Physical assets are now free."], answer: "Information and knowledge have become more valuable than traditional physical assets.", explanation: "In the new economy, intellectual property, data, and knowledge (intangibles) can be more critical for success than factories and machinery (physicals)." },
+                    { topic: "Topic 2: The New Business Environment", question: "The concept of 'vanishing distance and compressed time' is a direct implication of:", options: ["Local competition", "Stricter labor laws", "Globalization and the information revolution", "A decline in manufacturing"], answer: "Globalization and the information revolution", explanation: "Technology and globalization have made it possible to do business and compete anywhere in the world, instantly, collapsing traditional barriers of distance and time." },
+                    { topic: "Topic 2: The New Business Environment", question: "What is meant by the 'increased vulnerability' of organizations in the new business environment?", options: ["Companies are more susceptible to physical attacks.", "Continual change and interconnectedness mean disruptions can happen quickly and spread globally.", "Employees are less loyal.", "Profits are lower than in the past."], answer: "Continual change and interconnectedness mean disruptions can happen quickly and spread globally.", explanation: "Because of technology and globalization, a problem in one part of the world (like a supply chain disruption) can instantly create a crisis for a company on the other side of the planet." },
+                    { topic: "Topic 2: The New Business Environment", question: "A 'critical success factor' in the new business environment is the 'ability to embrace change.' This is most closely related to which view of competitive advantage?", options: ["I/O View", "RBV", "Guerrilla View", "Financial View"], answer: "Guerrilla View", explanation: "Embracing change is central to the Guerrilla View, which argues that success depends on adapting and responding to a constantly changing environment." },
+                    { topic: "Topic 2: The New Business Environment", question: "Which critical success factor involves creating new products, services, or processes?", options: ["Being a world-class organization", "Creativity and innovation capabilities", "Ability to embrace change", "Reducing physical assets"], answer: "Creativity and innovation capabilities", explanation: "Innovation is a key success factor, allowing firms to create new advantages and stay ahead of the competition." },
+                    { topic: "Topic 2: The New Business Environment", question: "A 'world-class organization' is best defined as one that:", options: ["Is the largest in its industry", "Has the highest profits", "Is able to compete successfully and achieve high performance on a global scale", "Has offices in every country"], answer: "Is able to compete successfully and achieve high performance on a global scale", explanation: "Being world-class means applying the best and most efficient practices and being able to hold your own against the best competitors, wherever they may be." },
+                    { topic: "Topic 2: The New Business Environment", question: "The information revolution has shifted the economy's focus from ____ to ____.", options: ["services; manufacturing", "physical assets; knowledge and information", "local; regional", "technology; manual labor"], answer: "physical assets; knowledge and information", explanation: "The ability to manage information and knowledge is now a key driver of value, often more so than managing physical production." },
+                    { topic: "Topic 2: The New Business Environment", question: "Globalization increases competitive pressure on firms by:", options: ["Limiting the number of available suppliers", "Opening up markets to a wider range of international competitors", "Making technology more expensive", "Reducing the importance of quality"], answer: "Opening up markets to a wider range of international competitors", explanation: "Globalization means a firm no longer competes only with local rivals but with the best firms from around the world." },
+                    { topic: "Topic 2: The New Business Environment", question: "Continual change means that strategic management must be viewed as a(n) ____ process.", options: ["one-time", "annual", "dynamic and continuous", "static"], answer: "dynamic and continuous", explanation: "In an environment of continual change, strategic management cannot be a static plan but must be an ongoing process of analysis, adaptation, and response." }
+                ]
+            },
+            "chapter3": {
+                title: "Chapter 3: Types of Strategies",
+                questions: [
+                    { topic: "Topic 1: Objectives", question: "Long-term objectives represent the results expected from pursuing certain ____.", options: ["goals", "strategies", "tactics", "policies"], answer: "strategies", explanation: "Strategies are the actions taken to accomplish long-term objectives. The two are directly linked." },
+                    { topic: "Topic 1: Objectives", question: "Which of the following is a characteristic of a well-stated objective?", options: ["Vague and general", "Unrealistic", "Qualitative only", "Measurable and quantitative"], answer: "Measurable and quantitative", explanation: "Objectives should be quantitative, measurable, realistic, understandable, and challenging to be effective." },
+                    { topic: "Topic 1: Objectives", question: "Increasing market share by 10% in the next fiscal year is an example of a ____ objective.", options: ["Financial", "Strategic", "Extrapolation", "Subjective"], answer: "Strategic", explanation: "Strategic objectives relate to a firm's competitive position and include things like market share, quality, and technological leadership." },
+                    { topic: "Topic 1: Objectives", question: "An objective focused on 'growth in revenues' or 'higher dividends' is considered a ____ objective.", options: ["Financial", "Strategic", "Operational", "Cultural"], answer: "Financial", explanation: "Financial objectives are associated with the financial performance of the company, such as revenues, earnings, and return on investment." },
+                    { topic: "Topic 1: Objectives", question: "The management practice of 'Managing by Crisis' involves:", options: ["Proactive planning for potential problems", "Letting events dictate management decisions", "Setting clear, long-term objectives", "Continuously improving processes"], answer: "Letting events dictate management decisions", explanation: "Managing by Crisis is a reactive approach where managers spend their time solving immediate problems rather than planning for the future." },
+                    { topic: "Topic 2: Levels & Types of Strategies", question: "Forward integration, backward integration, and horizontal integration are collectively referred to as ____ strategies.", options: ["Intensive", "Defensive", "Integration", "Diversification"], answer: "Integration", explanation: "These three strategies all involve integrating with other firms in the value chain, whether they are distributors, suppliers, or competitors." },
+                    { topic: "Topic 2: Levels & Types of Strategies", question: "Seeking to increase market share for present products in present markets is called ____.", options: ["Market Development", "Product Development", "Market Penetration", "Horizontal Integration"], answer: "Market Penetration", explanation: "Market penetration is an intensive strategy focused on gaining more share in a company's existing markets with its existing products." },
+                    { topic: "Topic 2: Levels & Types of Strategies", question: "Amazon beginning to offer its own line of diapers and wipes is an example of what strategy?", options: ["Market Development", "Product Development", "Market Penetration", "Related Diversification"], answer: "Product Development", explanation: "This is product development because Amazon is seeking increased sales by developing new products for its existing customer base." },
+                    { topic: "Topic 2: Levels & Types of Strategies", question: "A company selling off a division because it is unprofitable or doesn't fit with the core business is pursuing ____.", options: ["Liquidation", "Retrenchment", "Divestiture", "Backward Integration"], answer: "Divestiture", explanation: "Divestiture is the sale of a division or part of an organization." },
+                    { topic: "Topic 2: Levels & Types of Strategies", question: "The most risky and drastic defensive strategy, often a recognition of defeat, is ____.", options: ["Retrenchment", "Divestiture", "Liquidation", "Outsourcing"], answer: "Liquidation", explanation: "Liquidation involves selling all of a company's assets, in parts, for their tangible worth, effectively ending the business." },
+                    { topic: "Topic 3: Integration Strategies", question: "A strategy of seeking ownership or increased control of a firm's suppliers is:", options: ["Forward Integration", "Backward Integration", "Horizontal Integration", "Market Penetration"], answer: "Backward Integration", explanation: "Backward integration moves a company 'backward' in its value chain by gaining control over its suppliers." },
+                    { topic: "Topic 3: Integration Strategies", question: "A hotel company buying a chain of travel agencies is an example of:", options: ["Forward Integration", "Backward Integration", "Horizontal Integration", "Related Diversification"], answer: "Forward Integration", explanation: "This is forward integration because the hotel company is gaining control over its distributors (travel agencies)." },
+                    { topic: "Topic 3: Integration Strategies", question: "When is backward integration an especially effective strategy?", options: ["When current suppliers are cheap and reliable", "When the number of suppliers is large", "When current suppliers are expensive, unreliable, or incapable", "When the company lacks capital"], answer: "When current suppliers are expensive, unreliable, or incapable", explanation: "Controlling suppliers is most effective when the current supply chain is weak, unreliable, or too costly." },
+                    { topic: "Topic 3: Integration Strategies", question: "The most common reason for pursuing horizontal integration is to:", options: ["Reduce competition and achieve economies of scale", "Gain control over suppliers", "Enter new geographic markets", "Develop new products"], answer: "Reduce competition and achieve economies of scale", explanation: "Acquiring a competitor (horizontal integration) directly reduces competition and can lead to cost savings through economies of scale." },
+                    { topic: "Topic 4: Intensive Strategies", question: "When is market penetration a particularly effective strategy?", options: ["When markets are saturated", "When the market shares of competitors are growing", "When current markets are not saturated and usage rates could increase", "When the company has weak marketing"], answer: "When current markets are not saturated and usage rates could increase", explanation: "Market penetration works best when there is still room to grow within the company's existing markets." },
+                    { topic: "Topic 4: Intensive Strategies", question: "Introducing present products into new geographic areas is known as ____.", options: ["Market Penetration", "Product Development", "Market Development", "Unrelated Diversification"], answer: "Market Development", explanation: "Market development involves taking existing products to new markets, whether geographic or demographic." },
+                    { topic: "Topic 4: Intensive Strategies", question: "A guideline for pursuing product development is when an organization:", options: ["Is in a slow-growth industry", "Competes in an industry with rapid technological developments", "Has weak R&D capabilities", "Wants to reduce its product line"], answer: "Competes in an industry with rapid technological developments", explanation: "In tech-heavy industries, constant product development is often necessary to stay competitive." },
+                    { topic: "Topic 4: Intensive Strategies", question: "Under Armour signing a tennis champion to a multi-year marketing deal is an example of what strategy?", options: ["Product Development", "Market Penetration", "Market Development", "Horizontal Integration"], answer: "Market Penetration", explanation: "This is a marketing effort designed to increase market share for their existing products in their existing markets." },
+                    { topic: "Topic 5: Diversification Strategies", question: "Businesses are said to be ____ when their value chains possess competitively valuable cross-business strategic fits.", options: ["Integrated", "Intensive", "Related", "Unrelated"], answer: "Related", explanation: "Related diversification is defined by the presence of synergies or strategic fits between the value chains of the businesses." },
+                    { topic: "Topic 5: Diversification Strategies", question: "A primary reason companies pursue related diversification is to:", options: ["Enter a completely new field", "Capitalize on synergies", "Reduce the need for a strong management team", "Simplify business operations"], answer: "Capitalize on synergies", explanation: "Synergies, such as transferring skills, sharing a brand name, or combining activities to lower costs, are the main driver of related diversification." },
+                    { topic: "Topic 5: Diversification Strategies", question: "When a grocery store like Kroger starts preparing and selling full meals to-go, becoming a restaurant, it is an example of:", options: ["Related Diversification", "Unrelated Diversification", "Product Development", "Market Penetration"], answer: "Unrelated Diversification", explanation: "While both involve food, the value chains and competitive dynamics of a supermarket and a restaurant are very different, making this an unrelated diversification." },
+                    { topic: "Topic 5: Diversification Strategies", question: "Diversification strategies have become less popular recently because:", options: ["They are illegal", "Organizations find it difficult to manage diverse business activities", "They do not add shareholder value", "Synergies are too easy to achieve"], answer: "Organizations find it difficult to manage diverse business activities", explanation: "Many companies have found that managing a portfolio of diverse businesses is very challenging and have chosen to refocus on their core activities." },
+                    { topic: "Topic 6: Defensive Strategies", question: "The defensive strategy that involves regrouping through cost and asset reduction to reverse declining sales is ____.", options: ["Liquidation", "Divestiture", "Retrenchment", "Diversification"], answer: "Retrenchment", explanation: "Retrenchment, sometimes called a turnaround, is focused on making a struggling company leaner and more efficient to survive." },
+                    { topic: "Topic 6: Defensive Strategies", question: "Declaring bankruptcy can be a procedure for what type of strategy?", options: ["Growth", "Retrenchment", "Market Development", "Integration"], answer: "Retrenchment", explanation: "Bankruptcy can provide legal protection from creditors, allowing a firm the time and space to reorganize its operations as part of a retrenchment strategy." },
+                    { topic: "Topic 6: Defensive Strategies", question: "When is divestiture an especially effective strategy?", options: ["When a division requires more resources than the company can provide", "When a division is highly profitable", "When a division is a perfect fit with the rest of the company", "When the company has excess cash"], answer: "When a division requires more resources than the company can provide", explanation: "Selling a division (divestiture) is often wise when the parent company cannot afford to give it the investment it needs to be competitive." },
+                    { topic: "Topic 6: Defensive Strategies", question: "A firm should consider liquidation when:", options: ["It is the most profitable firm in the industry", "Retrenchment and divestiture have both failed", "It wants to enter a new market", "Its employee morale is high"], answer: "Retrenchment and divestiture have both failed", explanation: "Liquidation is the last resort, pursued only after other turnaround and defensive strategies have been unsuccessful." },
+                    { topic: "Topic 7: Porter's Generic Strategies", question: "According to Michael Porter, strategies allow organizations to gain competitive advantage from all of the following bases EXCEPT:", options: ["Cost leadership", "Differentiation", "Focus", "Market share"], answer: "Market share", explanation: "Porter's three generic strategies are cost leadership, differentiation, and focus. Market share may be a result, but it is not the strategic base itself." },
+                    { topic: "Topic 7: Porter's Generic Strategies", question: "A firm producing standardized products at a very low per-unit cost for a broad market is pursuing ____.", options: ["Cost Leadership", "Differentiation", "Focus", "Product Development"], answer: "Cost Leadership", explanation: "Cost leadership aims to be the low-cost producer for a wide range of customers." },
+                    { topic: "Topic 7: Porter's Generic Strategies", question: "The 'focus' strategy involves:", options: ["Serving all market segments", "Producing products and services that fulfill the needs of a small group of consumers", "Being the lowest cost provider overall", "Having the most unique product in the industry"], answer: "Producing products and services that fulfill the needs of a small group of consumers", explanation: "A focus strategy targets a specific niche market, either with a low-cost approach (cost focus) or a unique product (differentiation focus)." },
+                    { topic: "Topic 7: Porter's Generic Strategies", question: "Rolex watches, known for their unique brand image and quality targeting a specific clientele, is an example of:", options: ["Cost Leadership", "Differentiation Focus", "Cost Focus", "Market Penetration"], answer: "Differentiation Focus", explanation: "Rolex targets a niche market (focus) with a highly unique and prestigious product (differentiation)." },
+                    { topic: "Topic 8: Other Key Strategies & Tactics", question: "When two or more companies form a temporary partnership to capitalize on an opportunity, it is called a ____.", options: ["Merger", "Hostile Takeover", "Joint Venture", "Liquidation"], answer: "Joint Venture", explanation: "A joint venture is a cooperative arrangement between two or more firms for a specific purpose." },
+                    { topic: "Topic 8: Other Key Strategies & Tactics", question: "A primary reason many mergers and acquisitions fail is:", options: ["The companies are too similar", "The purchase price is too low", "Difficulties in integrating the different organizational cultures", "They create too much synergy"], answer: "Difficulties in integrating the different organizational cultures", explanation: "Clashes between the cultures of the acquiring and target firms are a major cause of M&A failure." },
+                    { topic: "Topic 8: Other Key Strategies & Tactics", question: "The practice of hiring another firm to perform a service or create a good that was traditionally done in-house is called:", options: ["Reshoring", "Outsourcing", "First Mover Advantage", "Partnering"], answer: "Outsourcing", explanation: "Outsourcing involves contracting out certain value chain activities to external specialists." },
+                    { topic: "Topic 8: Other Key Strategies & Tactics", question: "A 'first mover' advantage refers to the benefits a firm can gain by:", options: ["Waiting for competitors to innovate first", "Entering a new market or developing a new product before rivals", "Being the largest company in the industry", "Focusing only on its domestic market"], answer: "Entering a new market or developing a new product before rivals", explanation: "First movers can establish brand recognition and customer loyalty, lock in distribution channels, and gain other advantages that are difficult for later entrants to overcome." },
+                ]
+            },
+            "chapter4": {
+                title: "Chapter 4: Vision & Mission Analysis",
+                questions: [
+                    { topic: "Topic 1: Vision Statements", question: "A vision statement should answer the basic question:", options: ["'What is our business?'", "'Who are our competitors?'", "'What do we want to become?'", "'How will we achieve our goals?'"], answer: "'What do we want to become?'", explanation: "A vision statement is a future-oriented declaration of the organization's purpose and aspirations." },
+                    { topic: "Topic 1: Vision Statements", question: "In the strategic management process, which should be established first?", options: ["Mission Statement", "Vision Statement", "Annual Objectives", "Strategies"], answer: "Vision Statement", explanation: "A clear vision provides the foundation for developing a comprehensive mission statement and all subsequent strategic activities." },
+                    { topic: "Topic 1: Vision Statements", question: "A good vision statement is typically:", options: ["Long and detailed, covering all aspects of the business", "Short, preferably one sentence", "Updated monthly to reflect market changes", "Kept secret from lower-level employees"], answer: "Short, preferably one sentence", explanation: "Effective vision statements are concise, memorable, and easy to understand, making them powerful communication tools." },
+                    { topic: "Topic 1: Vision Statements", question: "The process of developing a vision statement should involve:", options: ["Only the CEO", "An external consulting firm exclusively", "As many managers as possible", "Only the marketing department"], answer: "As many managers as possible", explanation: "Broad participation in developing the vision statement fosters a sense of ownership and commitment across the organization." },
+                    { topic: "Topic 1: Vision Statements", question: "A well-written vision statement should be written from which perspective?", options: ["Shareholder perspective", "Management perspective", "Competitor perspective", "Customer perspective"], answer: "Customer perspective", explanation: "Focusing on the customer ensures that the vision is oriented toward meeting market needs, which is essential for long-term success." },
+                    { topic: "Topic 2: Mission Statements", question: "A mission statement is a declaration of an organization's:", options: ["Long-term financial goals", "Quarterly targets", "Reason for being", "Competitive strategy"], answer: "Reason for being", explanation: "The mission statement, also known as a creed statement, broadly outlines the organization's purpose." },
+                    { topic: "Topic 2: Mission Statements", question: "According to Peter Drucker, asking 'What is our business?' is synonymous with asking:", options: ["'What is our vision?'", "'What is our mission?'", "'Who are our employees?'", "'What is our stock price?'"], answer: "'What is our mission?'", explanation: "Drucker emphasizes that the mission statement is the fundamental definition of the organization's business." },
+                    { topic: "Topic 2: Mission Statements", question: "A clear mission statement is essential for effectively establishing:", options: ["Job descriptions", "Daily work schedules", "Objectives and strategies", "Office locations"], answer: "Objectives and strategies", explanation: "The mission statement provides the context and foundation upon which clear objectives and effective strategies can be built." },
+                    { topic: "Topic 2: Mission Statements", question: "One of the key benefits of having a clear mission statement is:", options: ["To guarantee high profits", "To provide a basis for the allocation of resources", "To eliminate the need for a vision statement", "To make the company attractive for a hostile takeover"], answer: "To provide a basis for the allocation of resources", explanation: "A clear mission helps prioritize activities and ensures that resources are allocated to tasks that support the organization's central purpose." },
+                    { topic: "Topic 2: Mission Statements", question: "A mission statement needs to be broad in scope to:", options: ["Confuse competitors", "Allow for the generation of a range of feasible objectives and strategies", "Include specific financial numbers", "Be changed on a weekly basis"], answer: "Allow for the generation of a range of feasible objectives and strategies", explanation: "A mission that is too narrow can stifle creativity and constrain the consideration of new opportunities and growth." },
+                    { topic: "Topic 3: Characteristics & Customer Orientation", question: "Which of the following is a key characteristic of a good mission statement?", options: ["Includes monetary amounts and ratios", "Is longer than 300 words", "Is inspiring and identifies the utility of a firm's products", "Focuses only on the company's internal operations"], answer: "Is inspiring and identifies the utility of a firm's products", explanation: "An effective mission statement should be inspiring to stakeholders and explain the value or benefit customers receive, not just list the product itself." },
+                    { topic: "Topic 3: Characteristics & Customer Orientation", question: "The statement 'Do not offer me clothes. Offer me attractive looks.' reflects which important aspect of a mission statement?", options: ["A concern for employees", "A concern for public image", "A customer orientation", "A focus on technology"], answer: "A customer orientation", explanation: "This illustrates the principle of focusing on the utility and benefits a product provides to the customer, rather than on the physical product itself." },
+                    { topic: "Topic 3: Characteristics & Customer Orientation", question: "A mission statement that is 'reconciliatory' aims to:", options: ["Be aggressive toward competitors", "Appeal to the different stakeholders of the organization", "Be constantly in conflict with the vision", "Only focus on the needs of shareholders"], answer: "Appeal to the different stakeholders of the organization", explanation: "A good mission statement should reconcile the different claims and interests of various stakeholder groups (e.g., employees, customers, shareholders)." },
+                    { topic: "Topic 3: Characteristics & Customer Orientation", question: "An effective mission statement should distinguish a given organization from ____.", options: ["its past", "its future goals", "all others", "its non-profit status"], answer: "all others", explanation: "The mission should be specific enough to separate the firm from all other companies, especially its direct competitors." },
+                    { topic: "Topic 3: Characteristics & Customer Orientation", question: "Why should a mission statement be 'enduring'?", options: ["It should never be changed under any circumstances.", "It provides a stable guide for the organization over the long term.", "It is a legal requirement.", "It is too expensive to change."], answer: "It provides a stable guide for the organization over the long term.", explanation: "While not set in stone, a mission should be enduring and not change frequently, providing a consistent framework for decision-making." },
+                    { topic: "Topic 4: Components of a Mission Statement", question: "Which component of a mission statement answers the question 'Who are the firm’s customers?'", options: ["Products or Services", "Markets", "Customers", "Philosophy"], answer: "Customers", explanation: "This component explicitly identifies the target audience or the primary groups of customers the organization serves." },
+                    { topic: "Topic 4: Components of a Mission Statement", question: "The 'Markets' component of a mission statement refers to:", options: ["The stock market performance", "The target customers", "The industry the firm is in", "The geographic areas where the firm competes"], answer: "The geographic areas where the firm competes", explanation: "The Markets component defines the geographical scope of the firm's operations, whether local, regional, national, or international." },
+                    { topic: "Topic 4: Components of a Mission Statement", question: "A statement about a firm's commitment to growth and financial soundness relates to which component?", options: ["Technology", "Philosophy", "Survival, growth, and profitability", "Public Image"], answer: "Survival, growth, and profitability", explanation: "This component demonstrates the firm's intent to remain viable, grow, and provide returns to its stakeholders." },
+                    { topic: "Topic 4: Components of a Mission Statement", question: "Which component reflects the firm's basic beliefs, values, aspirations, and ethical priorities?", options: ["Self-concept", "Philosophy", "Public Image", "Concern for Employees"], answer: "Philosophy", explanation: "The philosophy outlines the core principles and values that guide the organization's conduct and decision-making." },
+                    { topic: "Topic 4: Components of a Mission Statement", question: "The 'Self-Concept' component of a mission statement should identify the firm's:", options: ["Employee morale", "Major competitive advantage", "Technological capabilities", "Customer base"], answer: "Major competitive advantage", explanation: "The self-concept, or distinctive competence, component clarifies what the company does exceptionally well or what its major strength is." },
+                    { topic: "Topic 4: Components of a Mission Statement", question: "Mentioning a commitment to 'eco-friendly products' or 'community involvement' would address which component?", options: ["Technology", "Philosophy", "Concern for Public Image", "Markets"], answer: "Concern for Public Image", explanation: "This component shows that the firm is responsive to social, community, and environmental concerns." },
+                    { topic: "Topic 4: Components of a Mission Statement", question: "Stating that 'employees are our most valuable asset' is an example of which component?", options: ["Self-Concept", "Customers", "Philosophy", "Concern for Employees"], answer: "Concern for Employees", explanation: "This component acknowledges the importance of employees and reflects the firm's attitude toward its workforce." },
+                    { topic: "Topic 4: Components of a Mission Statement", question: "The statement 'We are committed to being a leader in mobile payment technology' would best represent which component?", options: ["Markets", "Technology", "Customers", "Philosophy"], answer: "Technology", explanation: "This directly addresses whether the firm is technologically current and its commitment to technological leadership." },
+                    { topic: "Topic 4: Components of a Mission Statement", question: "If a mission statement says the company serves 'men, women, and children,' it is addressing which component?", options: ["Markets", "Products or Services", "Customers", "Philosophy"], answer: "Customers", explanation: "This clearly identifies the demographic groups the company targets as its customers." },
+                    { topic: "Topic 4: Components of a Mission Statement", question: "A firm's commitment to 'following the golden rule in all that we do' is part of which component?", options: ["Self-Concept", "Philosophy", "Public Image", "Profitability"], answer: "Philosophy", explanation: "This statement reflects the basic beliefs, values, and ethical priorities of the firm." }
+                ]
+            },
+            "chapter5": {
+                title: "Chapter 5: The Internal Audit",
+                questions: [
+                    { topic: "Placeholder", question: "This is a placeholder question for Chapter 5.", options: ["A", "B", "C", "D"], answer: "A", explanation: "This section is under construction." }
+                ]
+            },
+             "chapter6": {
+                title: "Chapter 6: The External Audit",
+                questions: [
+                    { topic: "Placeholder", question: "This is a placeholder question for Chapter 6.", options: ["A", "B", "C", "D"], answer: "A", explanation: "This section is under construction." }
+                ]
+            },
+            "chapter8": {
+                title: "Chapter 8: Strategy Generation & Selection",
+                questions: [
+                    { topic: "Topic 1: The Overall Framework", question: "The strategy-formulation analytical framework consists of how many stages?", options: ["Two", "Three", "Four", "Five"], answer: "Three", explanation: "The framework has three stages: The Input Stage, The Matching Stage, and The Decision Stage." },
+                    { topic: "Topic 1: The Overall Framework", question: "The primary purpose of Stage 1 (The Input Stage) is to:", options: ["Generate alternative strategies", "Objectively evaluate strategies", "Summarize basic input information", "Select the final strategy"], answer: "Summarize basic input information", explanation: "Stage 1 is about summarizing information from the EFE, IFE, and CPM matrices to serve as input for the subsequent stages." },
+                    { topic: "Topic 1: The Overall Framework", question: "Which stage is primarily focused on generating a set of feasible alternative strategies?", options: ["The Input Stage", "The Matching Stage", "The Decision Stage", "The Governance Stage"], answer: "The Matching Stage", explanation: "The Matching Stage uses various tools to 'match' internal and external factors to generate a list of possible strategies." },
+                    { topic: "Topic 1: The Overall Framework", question: "Which of the following does the Input Stage rely on for its information?", options: ["SWOT Matrix", "IFE Matrix, EFE Matrix, and CPM", "QSPM", "Grand Strategy Matrix"], answer: "IFE Matrix, EFE Matrix, and CPM", explanation: "Stage 1 summarizes the results of the internal audit (IFE), external audit (EFE), and competitive analysis (CPM)." },
+                    { topic: "Topic 1: The Overall Framework", question: "The overall framework is designed to integrate intuition and ____.", options: ["Guesswork", "Analysis", "Politics", "Culture"], answer: "Analysis", explanation: "The framework provides a systematic and analytical approach to supplement, not replace, the intuition and judgment of strategists." },
+                    { topic: "Topic 2: The SWOT Matrix", question: "A WO Strategy in a SWOT analysis aims to:", options: ["Use strengths to take advantage of opportunities", "Improve internal weaknesses by using opportunities", "Use strengths to avoid threats", "Minimize weaknesses and avoid threats"], answer: "Improve internal weaknesses by using opportunities", explanation: "WO (Weaknesses-Opportunities) strategies are designed to overcome weaknesses by capitalizing on external opportunities." },
+                    { topic: "Topic 2: The SWOT Matrix", question: "If a company has a strong brand name (a strength) and sees a growing market in a new country (an opportunity), which type of SWOT strategy would be most appropriate?", options: ["ST Strategy", "WO Strategy", "WT Strategy", "SO Strategy"], answer: "SO Strategy", explanation: "An SO (Strengths-Opportunities) strategy leverages the company's strengths (strong brand) to take advantage of opportunities (new market)." },
+                    { topic: "Topic 2: The SWOT Matrix", question: "Facing a new government regulation that restricts its primary product (a threat), a company uses its strong R&D capabilities (a strength) to develop a compliant alternative. This is an example of a(n):", options: ["ST Strategy", "SO Strategy", "WT Strategy", "WO Strategy"], answer: "ST Strategy", explanation: "An ST (Strengths-Threats) strategy uses the firm's strengths (R&D) to avoid or mitigate the impact of an external threat (new regulation)." },
+                    { topic: "Topic 2: The SWOT Matrix", question: "A WT Strategy is considered the most ____ of the four types.", options: ["Aggressive", "Opportunistic", "Defensive", "Integrative"], answer: "Defensive", explanation: "WT (Weaknesses-Threats) strategies are defensive tactics aimed at reducing internal weaknesses and avoiding external threats." },
+                    { topic: "Topic 2: The SWOT Matrix", question: "A limitation of the SWOT Matrix is that it:", options: ["Is too complicated for most managers.", "Does not show how to achieve a competitive advantage.", "Is a static assessment (a snapshot in time).", "Can only be used for manufacturing firms."], answer: "Is a static assessment (a snapshot in time).", explanation: "SWOT analysis provides a static snapshot; the external and internal environments are dynamic and can change quickly." },
+                    { topic: "Topic 3: The SPACE Matrix", question: "The four quadrants of the SPACE Matrix represent four strategic postures: Aggressive, Conservative, Defensive, and ____.", options: ["Intensive", "Integrative", "Competitive", "Diversified"], answer: "Competitive", explanation: "The four strategic postures identified by the SPACE Matrix are Aggressive, Conservative, Defensive, and Competitive." },
+                    { topic: "Topic 3: The SPACE Matrix", question: "The Stability Position (SP) and Industry Position (IP) are the two ____ dimensions of the SPACE Matrix.", options: ["Internal", "External", "Neutral", "Financial"], answer: "External", explanation: "SP and IP are external dimensions, assessing factors like technological change, inflation, growth potential, and profitability." },
+                    { topic: "Topic 3: The SPACE Matrix", question: "The Financial Position (FP) and Competitive Position (CP) are the two ____ dimensions of the SPACE Matrix.", options: ["Internal", "External", "Neutral", "Growth"], answer: "Internal", explanation: "FP and CP are internal dimensions, assessing factors like ROI, market share, and product quality." },
+                    { topic: "Topic 3: The SPACE Matrix", question: "A firm whose SPACE Matrix directional vector is located in the Aggressive quadrant should consider strategies such as:", options: ["Retrenchment and divestiture", "Market penetration, market development, and integration", "Related diversification only", "Focusing on financial stability"], answer: "Market penetration, market development, and integration", explanation: "The aggressive posture indicates the firm is in an excellent position to use its internal strengths to take advantage of external opportunities and overcome weaknesses." },
+                    { topic: "Topic 3: The SPACE Matrix", question: "A directional vector pointing to the Defensive quadrant suggests that the firm should:", options: ["Aggressively expand its operations.", "Focus on improving internal weaknesses and avoiding external threats.", "Acquire competitors.", "Seek unrelated diversification."], answer: "Focus on improving internal weaknesses and avoiding external threats.", explanation: "The defensive posture implies the firm is in a weak position and should focus on retrenchment, divestiture, or liquidation." },
+                    { topic: "Topic 4: The BCG Matrix", question: "The two axes of the BCG Matrix are:", options: ["Industry Growth Rate and Market Growth", "Relative Market Share and IFE Score", "Industry Growth Rate and Relative Market Share Position", "EFE Score and Industry Growth Rate"], answer: "Industry Growth Rate and Relative Market Share Position", explanation: "The BCG Matrix plots divisions based on their relative market share (x-axis) and the industry growth rate (y-axis)." },
+                    { topic: "Topic 4: The BCG Matrix", question: "A division with a low relative market share in a high-growth industry is a ____.", options: ["Star", "Cash Cow", "Question Mark", "Dog"], answer: "Question Mark", explanation: "Question Marks have low market share in high-growth markets, and their future is uncertain. They require significant cash to grow." },
+                    { topic: "Topic 4: The BCG Matrix", question: "What is the primary cash flow characteristic of a 'Cash Cow'?", options: ["It requires large amounts of cash.", "It has a negative cash flow.", "It generates more cash than it requires.", "It has a neutral cash flow."], answer: "It generates more cash than it requires.", explanation: "Cash Cows are in low-growth markets but have a high market share, allowing them to generate significant cash flow that can fund other divisions." },
+                    { topic: "Topic 4: The BCG Matrix", question: "A 'Dog' division should typically be considered for which strategies?", options: ["Market penetration and product development", "Integration", "Liquidation, divestiture, or retrenchment", "Heavy investment to become a Star"], answer: "Liquidation, divestiture, or retrenchment", explanation: "Dogs have low market share in a slow-growing market and often drain resources, making them candidates for divestiture or liquidation." },
+                    { topic: "Topic 4: The BCG Matrix", question: "What is a major limitation of the BCG Matrix?", options: ["It is too simple and can be misleading.", "It only considers two dimensions, ignoring other important factors.", "The classifications of Star, Cow, Dog, Mark are not always clear-cut.", "All of the above."], answer: "All of the above", explanation: "The BCG matrix has been criticized for being an oversimplification, as viewing a business as simply high or low on two dimensions is often not enough." },
+                    { topic: "Topic 5: The IE Matrix", question: "The IE Matrix positions an organization's divisions in a nine-cell display based on:", options: ["Market Share and Industry Growth", "Competitive Position and Financial Position", "IFE and EFE total weighted scores", "Number of employees and total revenue"], answer: "IFE and EFE total weighted scores", explanation: "The IE Matrix is plotted with IFE total weighted scores on the x-axis and EFE total weighted scores on the y-axis." },
+                    { topic: "Topic 5: The IE Matrix", question: "In the IE Matrix, the prescription for divisions falling in cells I, II, or IV is generally to:", options: ["Harvest or Divest", "Hold and Maintain", "Grow and Build", "Liquidate"], answer: "Grow and Build", explanation: "These cells represent strong divisions, and the recommended strategies are intensive (e.g., market penetration) or integrative." },
+                    { topic: "Topic 5: The IE Matrix", question: "A key difference between the BCG and IE matrices is that the IE matrix:", options: ["Is only for small companies", "Includes more information by using underlying data from the IFE/EFE", "Only has four quadrants", "Focuses solely on external factors"], answer: "Includes more information by using underlying data from the IFE/EFE", explanation: "The IE Matrix is more complex and informative because its axes are based on the full IFE and EFE analyses, not just two factors." },
+                    { topic: "Topic 5: The IE Matrix", question: "A division with a weak IFE score and a weak EFE score would fall into which region of the IE Matrix?", options: ["Grow and Build", "Hold and Maintain", "Harvest or Divest", "Star Region"], answer: "Harvest or Divest", explanation: "Low scores on both internal (IFE) and external (EFE) factors place the division in a weak position (cells VI, VIII, or IX), suggesting harvest or divest strategies." },
+                    { topic: "Topic 6: The Grand Strategy Matrix", question: "A company in Quadrant I of the Grand Strategy Matrix is characterized by:", options: ["Weak Competitive Position, Slow Market Growth", "Strong Competitive Position, Rapid Market Growth", "Weak Competitive Position, Rapid Market Growth", "Strong Competitive Position, Slow Market Growth"], answer: "Strong Competitive Position, Rapid Market Growth", explanation: "Quadrant I represents an excellent strategic position, with a strong company in a rapidly growing market." },
+                    { topic: "Topic 6: The Grand Strategy Matrix", question: "Which quadrant in the Grand Strategy Matrix would lead to the most defensive or drastic strategies, such as retrenchment or liquidation?", options: ["Quadrant I", "Quadrant II", "Quadrant III", "Quadrant IV"], answer: "Quadrant III", explanation: "Quadrant III (Weak Competitive Position, Slow Market Growth) is the weakest position, requiring drastic action." },
+                    { topic: "Topic 6: The Grand Strategy Matrix", question: "A firm with a strong competitive position in a slow-growth market (Quadrant IV) should consider what type of strategy to find more promising growth areas?", options: ["Intensive strategies", "Integration", "Retrenchment", "Diversification"], answer: "Diversification", explanation: "Quadrant IV firms have high cash flow but limited internal growth opportunities, making diversification an attractive option." },
+                    { topic: "Topic 6: The Grand Strategy Matrix", question: "A firm in Quadrant II of the Grand Strategy Matrix must:", options: ["Aggressively acquire competitors.", "Seriously evaluate its present approach to the marketplace.", "Immediately begin liquidation.", "Maintain its current strategies."], answer: "Seriously evaluate its present approach to the marketplace.", explanation: "Firms in Quadrant II are in a fast-growing industry but are competitively weak, requiring a serious re-evaluation of their strategy." },
+                    { topic: "Topic 7: The Decision Stage & QSPM", question: "The primary purpose of the QSPM is to:", options: ["Generate new strategies.", "Objectively evaluate the relative attractiveness of feasible alternative strategies.", "Analyze competitors' weaknesses.", "Determine the company's culture."], answer: "Objectively evaluate the relative attractiveness of feasible alternative strategies.", explanation: "The QSPM is the capstone tool of the decision stage, designed to provide an analytical basis for choosing among strategies." },
+                    { topic: "Topic 7: The Decision Stage & QSPM", question: "In a QSPM, 'Attractiveness Scores' (AS) should be assigned to:", options: ["Individual factors.", "Sets of strategies.", "Only the top five factors.", "The total score."], answer: "Sets of strategies.", explanation: "AS scores are assigned to sets of strategies (e.g., a set of diversification strategies vs. a set of integration strategies) to determine the relative attractiveness of each set." },
+                    { topic: "Topic 7: The Decision Stage & QSPM", question: "How is the Total Attractiveness Score (TAS) calculated for a single factor in a QSPM?", options: ["Weight + Attractiveness Score (AS)", "Weight / Attractiveness Score (AS)", "Weight * Attractiveness Score (AS)", "The Attractiveness Score (AS) itself"], answer: "Weight * Attractiveness Score (AS)", explanation: "The TAS for each factor is calculated by multiplying the factor's weight by the Attractiveness Score assigned to the strategy for that factor." },
+                    { topic: "Topic 7: The Decision Stage & QSPM", question: "The 'Weight' column in a QSPM is taken directly from which previous analysis?", options: ["The BCG Matrix", "The SPACE Matrix", "The EFE and IFE Matrices", "The Grand Strategy Matrix"], answer: "The EFE and IFE Matrices", explanation: "The weights assigned to the key external and internal factors in the EFE and IFE matrices are transferred directly to the QSPM." },
+                    { topic: "Topic 7: The Decision Stage & QSPM", question: "What is a positive feature of the QSPM?", options: ["It removes all subjectivity from the decision.", "It can be used to examine sequential sets of strategies.", "It guarantees a successful strategy.", "It is very quick and simple to create."], answer: "It can be used to examine sequential sets of strategies.", explanation: "A positive feature is that sets of strategies can be examined sequentially or simultaneously, allowing for a comprehensive analysis." },
+                    { topic: "Topic 7: The Decision Stage & QSPM", question: "If the Sum Total Attractiveness Scores for two strategies are 5.30 and 3.55, this indicates that:", options: ["Both strategies are equally attractive.", "The first strategy is likely preferable.", "The second strategy is likely preferable.", "The analysis is flawed."], answer: "The first strategy is likely preferable.", explanation: "A higher Sum TAS indicates a more attractive strategic alternative, though the final decision still requires managerial judgment." },
+                    { topic: "Topic 7: The Decision Stage & QSPM", question: "In a QSPM, if a particular factor has no bearing on a specific strategy being evaluated, what should be done?", options: ["Assign an AS of 4.", "Assign an AS of 1.", "An Attractiveness Score should not be assigned; a dash is used.", "Remove the factor from the analysis."], answer: "An Attractiveness Score should not be assigned; a dash is used.", explanation: "If a factor does not affect a strategy, no AS is computed, and a dash is put in the column, resulting in no TAS for that factor." },
+                    { topic: "Topic 8: Culture, Politics, & Governance", question: "A strong organizational culture that is misaligned with a new strategy can:", options: ["Accelerate strategy implementation.", "Be a major barrier to change.", "Have no effect on the strategy.", "Automatically adapt to the new strategy."], answer: "Be a major barrier to change.", explanation: "If a new strategy runs counter to the established norms, values, and beliefs of the culture, it can face significant resistance." },
+                    { topic: "Topic 8: Culture, Politics, & Governance", question: "A 'strategy champion' is an individual who:", options: ["Is a member of the board of directors.", "Is most vocal in criticizing proposed strategies.", "Strongly supports and advocates for a particular strategy.", "Conducts the external audit."], answer: "Strongly supports and advocates for a particular strategy.", explanation: "A champion is a key person who uses their influence to push a strategy through the organization and secure its implementation." },
+                    { topic: "Topic 8: Culture, Politics, & Governance", question: "Which of the following describes the 'political' aspect of strategy choice?", options: ["Basing the decision purely on the QSPM numbers.", "Individuals or coalitions championing their preferred strategy based on personal interests.", "Allowing the government to choose the strategy.", "A random selection process."], answer: "Individuals or coalitions championing their preferred strategy based on personal interests.", explanation: "Politics in strategy choice often involves coalitions, personal interests, and championing, which can sometimes override purely analytical results." },
+                    { topic: "Topic 8: Culture, Politics, & Governance", question: "The primary legal duty of a board of directors is to:", options: ["Maximize executive salaries.", "Ensure the company follows all laws.", "Look out for the interests of shareholders.", "Manage daily operations."], answer: "Look out for the interests of shareholders.", explanation: "The board acts as fiduciaries of the shareholders, and their primary responsibility is to ensure the company is managed in the shareholders' best interests." },
+                    { topic: "Topic 8: Culture, Politics, & Governance", question: "Which of the following is a principle of good corporate governance?", options: ["The CEO is also the chairperson of the board.", "The board is composed primarily of company executives.", "There are no interlocking directorships.", "The compensation committee includes the CEO."], answer: "There are no interlocking directorships.", explanation: "No interlocking directorships (where a director or CEO sits on another director's board) is a key principle of good governance to ensure independence." },
+                    { topic: "Topic 8: Culture, Politics, & Governance", question: "The trend in corporate governance is toward:", options: ["Larger boards of directors.", "More insiders (executives) on boards.", "More outsiders (independents) on boards.", "Less board accountability."], answer: "More outsiders (independents) on boards.", explanation: "To increase accountability and reduce conflicts of interest, the trend is toward having a majority of independent, outside directors on boards." }
+                ]
+            }
+        };
+
+        // --- GLOBAL VARIABLES ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let activeQuizData = [];
+        let currentChapterKey = '';
+
+        // --- DOM ELEMENTS ---
+        const chapterSelectionScreen = document.getElementById('chapter-selection-screen');
+        const chapterButtonsContainer = document.getElementById('chapter-buttons-container');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const backToChaptersBtn = document.getElementById('back-to-chapters-btn');
+        const backToMainMenuBtn = document.getElementById('back-to-main-menu-btn');
+
+        const topicTitleEl = document.getElementById('topic-title');
+        const questionNumberEl = document.getElementById('question-number');
+        const totalQuestionsEl = document.getElementById('total-questions');
+        const scoreEl = document.getElementById('score');
+        const progressBar = document.getElementById('progress-bar');
+        
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackContainer = document.getElementById('feedback-container');
+        const feedbackTextEl = document.getElementById('feedback-text');
+        const explanationTextEl = document.getElementById('explanation-text');
+
+        const finalScoreEl = document.getElementById('final-score');
+        const resultMessageEl = document.getElementById('result-message');
+        
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', initializeApp);
+        
+        function initializeApp() {
+            chapterButtonsContainer.innerHTML = '';
+            const chapterOrder = ["chapter1", "chapter2", "chapter3", "chapter4", "chapter5", "chapter6", "chapter8"];
+            
+            chapterOrder.forEach(key => {
+                if (allQuizzes[key]) {
+                    const chapterInfo = allQuizzes[key];
+                    const button = document.createElement('button');
+                    button.classList.add('w-full', 'text-left', 'bg-white', 'dark:bg-gray-700', 'hover:bg-indigo-50', 'dark:hover:bg-gray-600', 'p-4', 'rounded-lg', 'text-lg', 'transition-all', 'duration-200', 'border', 'dark:border-gray-600', 'flex', 'items-center', 'space-x-4');
+                    
+                    const chapterNum = key.replace('chapter', '');
+                    
+                    button.innerHTML = `
+                        <span class="flex-shrink-0 h-12 w-12 flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 font-bold text-xl rounded-full">${chapterNum}</span>
+                        <span class="font-semibold text-gray-800 dark:text-gray-100">${chapterInfo.title.split(': ')[1]}</span>
+                    `;
+                    
+                    button.onclick = () => selectChapter(key);
+                    chapterButtonsContainer.appendChild(button);
+                }
+            });
+            
+            nextBtn.addEventListener('click', nextQuestion);
+            restartBtn.addEventListener('click', () => startQuiz(currentChapterKey));
+            backToChaptersBtn.addEventListener('click', showChapterSelection);
+            backToMainMenuBtn.addEventListener('click', showChapterSelection);
+        }
+
+        function showChapterSelection() {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            chapterSelectionScreen.classList.remove('hidden');
+        }
+
+        function selectChapter(chapterKey) {
+            currentChapterKey = chapterKey;
+            startQuiz(chapterKey);
+        }
+
+        function startQuiz(chapterKey) {
+            activeQuizData = allQuizzes[chapterKey].questions;
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            chapterSelectionScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            nextBtn.classList.add('hidden');
+            feedbackContainer.classList.add('hidden');
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            optionsContainer.innerHTML = '';
+            feedbackContainer.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+
+            const currentQuestion = activeQuizData[currentQuestionIndex];
+            
+            topicTitleEl.innerText = currentQuestion.topic;
+            questionNumberEl.innerText = currentQuestionIndex + 1;
+            totalQuestionsEl.innerText = activeQuizData.length;
+            scoreEl.innerText = score;
+            progressBar.style.width = `${((currentQuestionIndex) / activeQuizData.length) * 100}%`;
+            
+            questionTextEl.innerText = currentQuestion.question;
+
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.classList.add('w-full', 'text-left', 'p-4', 'rounded-lg', 'border', 'border-gray-300', 'dark:border-gray-600', 'bg-white', 'dark:bg-gray-700', 'hover:bg-gray-200', 'dark:hover:bg-gray-600', 'transition-colors', 'duration-200');
+                button.onclick = () => selectAnswer(option, button);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedOption, button) {
+            const currentQuestion = activeQuizData[currentQuestionIndex];
+            const isCorrect = selectedOption === currentQuestion.answer;
+
+            Array.from(optionsContainer.children).forEach(btn => {
+                btn.disabled = true;
+                const isCorrectAnswer = btn.innerText === currentQuestion.answer;
+                
+                if (isCorrectAnswer) {
+                    btn.classList.remove('hover:bg-gray-200', 'dark:hover:bg-gray-600');
+                    btn.classList.add('bg-green-100', 'dark:bg-green-800', 'border-green-500', 'dark:border-green-600', 'ring-2', 'ring-green-500');
+                } else if(btn === button){
+                    btn.classList.remove('hover:bg-gray-200', 'dark:hover:bg-gray-600');
+                    btn.classList.add('bg-red-100', 'dark:bg-red-800', 'border-red-500', 'dark:border-red-600', 'ring-2', 'ring-red-500');
+                }
+            });
+
+            feedbackContainer.classList.remove('hidden');
+            if (isCorrect) {
+                score++;
+                feedbackTextEl.innerText = "Correct!";
+                feedbackContainer.classList.remove('bg-red-100', 'dark:bg-red-900');
+                feedbackContainer.classList.add('bg-green-100', 'dark:bg-green-900', 'text-green-800', 'dark:text-green-200');
+            } else {
+                feedbackTextEl.innerText = "Incorrect!";
+                feedbackContainer.classList.remove('bg-green-100', 'dark:bg-green-900');
+                feedbackContainer.classList.add('bg-red-100', 'dark:bg-red-900', 'text-red-800', 'dark:text-red-200');
+            }
+            explanationTextEl.innerText = currentQuestion.explanation;
+            
+            scoreEl.innerText = score;
+            nextBtn.classList.remove('hidden');
+
+            if (currentQuestionIndex === activeQuizData.length - 1) {
+                nextBtn.innerText = 'Show Results';
+            } else {
+                nextBtn.innerText = 'Next Question';
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < activeQuizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            progressBar.style.width = '100%';
+
+            const percentage = Math.round((score / activeQuizData.length) * 100);
+            finalScoreEl.innerText = `${score} / ${activeQuizData.length} (${percentage}%)`;
+
+            let message = '';
+            if (percentage === 100) {
+                message = "Perfect Score! You're a master of this chapter's concepts!";
+            } else if (percentage >= 80) {
+                message = "Excellent job! You have a strong grasp of these topics.";
+            } else if (percentage >= 60) {
+                message = "Good effort! A little more review will make you an expert.";
+            } else {
+                message = "Keep studying! Review the explanations to improve your score.";
+            }
+            resultMessageEl.innerText = message;
+        }
+    </script>
+</body>
+</html>
